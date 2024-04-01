@@ -2,6 +2,10 @@ import pyxel
 from math import sqrt, pi
 from random import randint
 
+"""
+PROJET PERSONNEL QUE JE CONTINUE LORSQUE J'AI DU TEMPS LIBRE SIMPLEMENT POUR M'AMELIORER EN PROGRAMMATION
+"""
+
 
 pyxel.init(214, 214, title="survie")
 pyxel.load("style_.pyxres")
@@ -134,8 +138,8 @@ class gamer:
         self.inventory={"baies":0, "bois":3, "viande":0, "feu":0, "pierre":2} #inventaire
         self.in_arbre=False #le joueur est il dans un arbre
         self.id='gamer' #identification
-        self.inv=['pierre','bois']
-        self.recettes=[]
+        self.inv=['pierre','bois']#liste des objets que détient le joueur dans leur ordre d'acquisition
+        self.recettes=[]#liste des recettes que le joueur peut réaliser (ex: pioche, feu de camps etc)
          
     def __repr__(self):
         return f"{self.id},{self.alive},{self.x},{self.y},{self.dirx},{self.diry},{self.hp}"
@@ -290,6 +294,9 @@ class gamer:
         return porcherie
     
     def faim(self):
+        """
+        update la faim du joueur, enlève des points de vie si le joueur a trop faim
+        """
         if self.hunger<=0:
             self.hp-=1
             if self.hp==0:
@@ -301,6 +308,9 @@ class gamer:
                 self.hp+=1
     
     def nourrir(self,food):
+        """
+        update la faim du joueur lorsqu'il consomme un aliment
+        """
         if food=="baies":
             if self.inventory['baies']>=1 and self.hunger+1<=10:
                 self.inventory['baies']-=1
@@ -315,6 +325,9 @@ class gamer:
                     self.hunger+=1
                     
     def linv(self):
+        """
+        liste des objets dans l'inventaire dans leur ordre d'aquisition
+        """
         for el in self.inventory:
             if self.inventory[el]>0 and el not in self.inv:
                 self.inv.append(el)
@@ -328,18 +341,18 @@ class fist:
     les poings du joueur
     """
     def __init__(self, gamer):
-        self.x1=gamer.x-8
+        self.x1=gamer.x-8 
         self.y1=gamer.y+8
         self.u1=32
         self.v1=0
-        #coordonnées du premier poing
+        #^coordonnées du premier poing
         self.x2=gamer.x+16
         self.y2=gamer.y+8
         self.u2=32
         self.v2=0
         self.t=[]
         self.tiens={}
-        #coordonnées du deuxième poing        
+        #^coordonnées du deuxième poing        
       
     
     def move(self,gamer):
@@ -431,12 +444,18 @@ class fist:
                     self.y2=gamer.y+8
                     
     def tenir(self, objet,gamer):
+        """
+        affiche les objets que le joueur tient dans ses mains
+        """
         if len(self.tiens)<6:
             self.t.append(objet)
             gamer.inventory[objet]-=1
             self.tiens[f'{objet}{len(self.tiens)}']=(randint(1,4),randint(1,4))
                 
     def use(self,objet, gamer):
+        """
+        retir les objets de l'inventaire du joueur quand utilisés
+        """
         if (self.v1==136 and self.v2==152) or (self.v1==152 and self.v2==136):
             gamer.inventory['bois']-=1
             gamer.inventory['pierre']-=1
@@ -444,12 +463,18 @@ class fist:
             
             
     def back(self,gamer):
+        """
+        remet les objets que le joueur avait dans les mains dans l'inventaire
+        """
         for el in range(len(self.t)):
             gamer.inventory[self.t[el]]+=1
         self.t=[]
         self.tiens={}
 
     def much(self, objet):
+        """
+        donne la quantité d'un objet que le joueur a dans les mains
+        """
         m=0
         for el in self.t:
             if el==objet:
@@ -457,6 +482,9 @@ class fist:
         return m
     
     def recette(self,gamer):
+        """
+        ajoute les recettes que le joueur peut utiliser
+        """
         if self.much('bois')==3 and self.much('pierre')==2:
             if 'pioche' not in gamer.recettes:
                 gamer.recettes.append('pioche')
@@ -518,7 +546,7 @@ class arbre:
                 #retire des pommes/du bois à l'arbre si il est en état de perdre des ressources
                 self.etat-=1
                 self.x_=self.x-1
-                #petite animation de l'abre
+                #^petite animation de l'abre
                 if self.etat>=0:
                     gamer.inventory["baies"]+=1
                     #ajoute les baies à l'inventaire
@@ -554,6 +582,7 @@ class cochon:
         self.h=16
         #coordonnées de l'image, me simplifient beaucoup la vie
         self.proie=False
+        #^est-ce que le cochon est actuellement en proie, si oui il doit fuir
         self.id="cochon"
     
     def __repr__(self):
@@ -592,6 +621,9 @@ class cochon:
                     self.diry=-self.diry
                     
     def fuite(self,ours):
+        """
+        évite les ours
+        """
         if en_proie(self.x, self.y, self.dirx, self.diry,ours.x,ours.y):
             if en_proie(self.x, self.y, self.dirx*47, self.diry,ours.x, ours.y):
                 if self.dirx==0:
@@ -604,10 +636,13 @@ class cochon:
                 else:
                     self.diry=-self.diry
             
-#---------------------Araignée----------------------------------
+#---------------------Ours----------------------------------
 
 class ours:
     def __init__(self,cam):
+        """
+        initialise les ours, très similaire au cochons
+        """
         self.x=randint(54,600)
         while self.x in [i for i in range(cam.x-16, cam.x+214)]:
             self.x=randint(54,600)
@@ -624,6 +659,10 @@ class ours:
         self.id="ours"
     
     def move_in_bound(self):
+        """
+        bouge l'ours dans les limites du jeu
+
+        """
         if self.x+self.dirx>1 and self.x+self.dirx<400+214-16:
             self.x+=self.dirx
         else: 
@@ -634,6 +673,9 @@ class ours:
             self.diry=randint(-1,1)
             
     def suivre(self, cochon):
+        """
+        prend les cochons en proie
+        """
         if en_proie(self.x, self.y, self.dirx*2, self.diry*2, cochon.x, cochon.y):
             if cochon.x>self.x:
                 self.dirx=1
@@ -649,6 +691,9 @@ class ours:
                 self.diry=0
                 
     def sj(self, gamer,cam):
+        """
+        poursuit le joueur
+        """
         if gamer.x+cam.x+8 in [self.x+i+8 for i in range(-28,44)] and gamer.y+cam.y+8 in [self.y+i+8 for i in range(-28,44)]:
             if gamer.x+cam.x>self.x:
                 self.dirx=1
@@ -664,6 +709,9 @@ class ours:
                 self.diry=0
     
     def miam(self, proie,comp):
+        """
+        produit des dégat sur la proie, cochon ou joueur
+        """
         if comp%30==15:    
             proie.hp-=1
             if proie.id=="cochon":
@@ -676,9 +724,12 @@ class ours:
         elif proie.id=="cochon":
             proie.v=0
         return proie
-
+#---------------------Pierres----------------------------------
 class Stone:
     def __init__(self,x,y):
+        """
+        Initialise les pierres
+        """
         self.etat=2
         #entre 4 et 1 c'est le nombre de pommes, en dessous (jusqu'à -4) c'est le bois
         self.x=x
@@ -708,7 +759,9 @@ class Stone:
             self.v=48
             
     def recolte(self, seconde,comp,gamer):
-        
+        """
+        Ce qu'il se passe lorsque la pierre est tapée
+        """
         if comp%30==15 :
             #une fois par seconde
             if self.etat>0:
@@ -721,42 +774,46 @@ class Stone:
         else:
             self.x_=self.x
 
- 
+#-----------------La Souris------------------------------------- 
 class Mouse:
     def __init__(self,seconde):
         self.x=pyxel.mouse_x
         self.y=pyxel.mouse_y
-        self.last=seconde 
-        self.show=False
+        self.last=seconde #derniere fois que la souris a bougé
+        self.show=False #cache la souris
     
 
 #---------------------Variables---------------------------------
 def en_proie(x,y,dirx,diry,autre_x,autre_y):
+    """
+    Dis si un être vivant est chassé
+    """
     if x+dirx+8 in [autre_x+i+8 for i in range(-28,44)] and y+diry+8 in [autre_y+i+8 for i in range(-28,44)]:
         return True
     else:
         return False
 
-cam=cam()
-gamer=gamer()
-fist=fist(gamer)
-comp=0
-seconde=0
-foret=[arbre(17*8,16*8), arbre(13*8,18*8), arbre(15*8,22*8), arbre(18*8,12*8), arbre(28*8,16*8), arbre(33*8,13*8), arbre(42*8,21*8), arbre(2*8,17*8), arbre(26*8,10*8)]
-caillasse=[Stone(14*8,26*8)]
-porcherie=[]
+cam=cam()#caméra
+gamer=gamer()#joueur
+fist=fist(gamer)#poings
+comp=0 #temps en nombre d'images
+seconde=0 #secondes 
+foret=[arbre(17*8,16*8), arbre(13*8,18*8), arbre(15*8,22*8), arbre(18*8,12*8), arbre(28*8,16*8), arbre(33*8,13*8), arbre(42*8,21*8), arbre(2*8,17*8), arbre(26*8,10*8)]#tous les arbres
+caillasse=[Stone(14*8,26*8)]#toutes les pierres
+porcherie=[]#tous les cochons
 for i in range(3):
     porcherie.append(cochon(cam))
-arg=[]
+arg=[] #tous les ours
 for i in range(3):
     arg.append(ours(cam))
-P=False
-Help=False
-Mouse=Mouse(0)
-ressources={'baies': [(56,64),(40,120)], 'bois': [(72,0),(40,136)], 'viande': [(88,0),(40,128)], 'pierre':[(152,0),[40,152]],'pioche':[(168,0)]}
+P=False #pause
+Help=False #aide/tuto
+Mouse=Mouse(0) #souris
+ressources={'baies': [(56,64),(40,120)], 'bois': [(72,0),(40,136)], 'viande': [(88,0),(40,128)], 'pierre':[(152,0),[40,152]],'pioche':[(168,0)]} #ressources disponibles
 
 def update():
-    global cam, gamer, fist, comp, seconde, foret, porcherie, P, arg, Help,Mouse, caillasse
+    #change les variables dans le jeu 30 fois par seconde
+    global cam, gamer, fist, comp, seconde, foret, porcherie, P, arg, Help,Mouse, caillasse #variables universelles
     if gamer.alive==True:  
         if Help:
             if pyxel.btnp(pyxel.KEY_BACKSPACE):
@@ -890,6 +947,9 @@ def update():
             
 
 def draw():
+    """
+    dessine 30 fois par seconde
+    """
     global cam, gamer, fist, foret, porcherie, P,arg, Help,Mouse,caillasse
     if gamer.alive==True:
         pyxel.cls(11)
@@ -970,4 +1030,4 @@ def draw():
         #pyxel.text(2,58,f"{pyxel.mouse_x in [i for i in range(9,9+20*len(gamer.inv))] and pyxel.mouse_y in [j for j in range(188,188+17)]}",7)
         
        
-pyxel.run(update,draw)
+pyxel.run(update,draw) #lance le jeu

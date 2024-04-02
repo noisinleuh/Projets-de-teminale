@@ -31,6 +31,6 @@ def recherche(m,texte):
             #print(j, texte[j:])
     return 'pas dans la chaine'
    
-texte = "TOUS LES HOMMES NAISSENT ET DEMEURENT LIBRES ET EGAUX EN DROIT SAUF LES ROUX" 
+texte = "TOUS LES HOMMES NAISSENT ET DEMEURENT LIBRES ET EGAUX EN DROIT" 
 
-print(recherche('SAUF',texte))
+print(recherche('LIBRES',texte))
